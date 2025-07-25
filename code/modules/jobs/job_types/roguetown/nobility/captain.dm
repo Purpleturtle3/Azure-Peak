@@ -217,7 +217,6 @@
 	H.dna.species.soundpack_m = new /datum/voicepack/male/knight()
 	ADD_TRAIT(H, TRAIT_NOBLE, TRAIT_GENERIC)
 	ADD_TRAIT(H, TRAIT_HEAVYARMOR, TRAIT_GENERIC)
-	ADD_TRAIT(H, TRAIT_STEELHEARTED, TRAIT_GENERIC)
 	ADD_TRAIT(H, TRAIT_GUARDSMAN, TRAIT_GENERIC)
 	H.verbs |= list(/mob/living/carbon/human/proc/request_outlaw, /mob/proc/haltyell, /mob/living/carbon/human/mind/proc/setorders)
 	H.adjust_blindness(-3)
