@@ -58,10 +58,6 @@
 		"fortune" = current_boost,
 		"speed" = current_boost
 	)
-	//Apply Uncapped STR as long as it's still positive.
-	if(current_boost > 0)
-		ADD_TRAIT(owner, TRAIT_STRENGTH_UNCAPPED, TRAIT_MIRACLE)
-
 	// Apply Beautiful trait for positive boosts
 	if(current_boost == 5)
 		ADD_TRAIT(owner, TRAIT_BEAUTIFUL, TRAIT_MIRACLE)
@@ -115,7 +111,6 @@
 /datum/status_effect/buff/ashen_aril/on_remove()
 	. = ..()
 	owner.remove_filter(ASHEN_FILTER)
-	REMOVE_TRAIT(owner, TRAIT_STRENGTH_UNCAPPED, TRAIT_MIRACLE)
 	if(!prevent_reapply)
 	// Handle effect progression
 		if(current_boost > -4)
