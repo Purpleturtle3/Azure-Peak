@@ -249,7 +249,7 @@
 	if(istype(user.rmb_intent, /datum/rmb_intent/weak))
 		used_str--
 	if(used_str >= 11)
-		newforce = newforce + (newforce * ((used_str - 10) * 0.5))
+		newforce = newforce + (newforce * ((used_str - 10) * 0.05))
 	else if(used_str <= 9)
 		newforce = newforce - (newforce * ((10 - used_str) * 0.1))
 
