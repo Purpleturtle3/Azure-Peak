@@ -1,27 +1,29 @@
 
 GLOBAL_LIST_INIT(character_flaws, list(
 	"Alcoholic"=/datum/charflaw/addiction/alcoholic,
-	"Devout Follower"=/datum/charflaw/addiction/godfearing,
+	"Bad Sight"=/datum/charflaw/badsight,
+	"Chronic Migraines"=/datum/charflaw/chronic_migraine,
+	"Clingy"=/datum/charflaw/clingy,
 	"Colorblind"=/datum/charflaw/colorblind,
-	"Smoker"=/datum/charflaw/addiction/smoker,
-	"Junkie"=/datum/charflaw/addiction/junkie,
+	"Critical Weakness"=/datum/charflaw/critweakness,
+	"Cyclops (L)"=/datum/charflaw/noeyel,
+	"Cyclops (R)"=/datum/charflaw/noeyer,
+	"Devout Follower"=/datum/charflaw/addiction/godfearing,
 	"Greedy"=/datum/charflaw/greedy,
+	"Isolationist"=/datum/charflaw/isolationist,
+	"Junkie"=/datum/charflaw/addiction/junkie,
+	"Masochist"=/datum/charflaw/masochist,
+	"Mute"=/datum/charflaw/mute,
 	"Narcoleptic"=/datum/charflaw/narcoleptic,
 	"Nymphomaniac"=/datum/charflaw/addiction/lovefiend,
-	"Sadist"=/datum/charflaw/addiction/sadist,
-	"Masochist"=/datum/charflaw/masochist,
+	"Old War Wound"=/datum/charflaw/old_war_wound,
 	"Paranoid"=/datum/charflaw/paranoid,
-	"Clingy"=/datum/charflaw/clingy,
-	"Isolationist"=/datum/charflaw/isolationist,
-	"Bad Sight"=/datum/charflaw/badsight,
-	"Cyclops (R)"=/datum/charflaw/noeyer,
-	"Cyclops (L)"=/datum/charflaw/noeyel,
-	"Wood Arm (R)"=/datum/charflaw/limbloss/arm_r,
-	"Wood Arm (L)"=/datum/charflaw/limbloss/arm_l,
-	"Sleepless"=/datum/charflaw/sleepless,
-	"Mute"=/datum/charflaw/mute,
-	"Critical Weakness"=/datum/charflaw/critweakness,
 	"Random or No Flaw"=/datum/charflaw/randflaw,
+	"Sadist"=/datum/charflaw/addiction/sadist,
+	"Sleepless"=/datum/charflaw/sleepless,
+	"Smoker"=/datum/charflaw/addiction/smoker,
+	"Wood Arm (L)"=/datum/charflaw/limbloss/arm_l,
+	"Wood Arm (R)"=/datum/charflaw/limbloss/arm_r,
 	"No Flaw (3 TRIUMPHS)"=/datum/charflaw/noflaw,
 	))
 
@@ -502,3 +504,76 @@ GLOBAL_LIST_INIT(character_flaws, list(
 
 /datum/charflaw/critweakness/on_mob_creation(mob/user)
 	ADD_TRAIT(user, TRAIT_CRITICAL_WEAKNESS, TRAIT_GENERIC)
+
+/datum/charflaw/chronic_migraine
+	name = "Chronic Migraines"
+	desc = "You suffer from frequent, debilitating headaches that can strike without warning."
+
+/datum/charflaw/chronic_migraine/on_mob_creation(mob/user)
+	if(ishuman(user))
+		var/mob/living/carbon/human/H = user
+		// Apply chronic pain to head
+		for(var/obj/item/bodypart/BP in H.bodyparts)
+			if(BP.body_zone == BODY_ZONE_HEAD)
+				BP.chronic_pain = rand(35, 55)
+				BP.chronic_pain_type = CHRONIC_NERVE_DAMAGE
+				break
+
+		to_chat(user, span_warning("You feel the familiar pressure building behind your eyes."))
+
+/datum/charflaw/chronic_migraine/flaw_on_life(mob/user)
+	if(!ishuman(user))
+		return
+
+	var/mob/living/carbon/human/H = user
+
+	// Migraine attacks
+	if(prob(2))
+		for(var/obj/item/bodypart/BP in H.bodyparts)
+			if(BP.body_zone == BODY_ZONE_HEAD)
+				BP.lingering_pain += rand(25, 40)
+				break
+
+		// Severe migraine effects
+		if(prob(30)) // 30% chance of severe episode
+			H.blur_eyes(rand(3, 6))
+			to_chat(H, span_boldwarning("A severe migraine strikes! Your vision blurs and your head pounds!"))
+		else
+			to_chat(H, span_warning("A migraine headache begins to build."))
+
+	// Light sensitivity during migraines
+	if(prob(1))
+		var/obj/item/bodypart/head = null
+		for(var/obj/item/bodypart/BP in H.bodyparts)
+			if(BP.body_zone == BODY_ZONE_HEAD)
+				head = BP
+				break
+
+		if(head && head.lingering_pain > 20)
+			if(H.loc && H.loc.luminosity > 2)
+				head.lingering_pain += rand(5, 10)
+				to_chat(H, span_warning("The flickering flames make your migraine worse!"))
+
+/datum/charflaw/old_war_wound/flaw_on_life(mob/user)
+	if(!ishuman(user))
+		return
+
+	var/mob/living/carbon/human/H = user
+
+	// Stress-triggered pain flares
+	if(H.health < (H.maxHealth * 0.7) || H.get_stress_amount() > 10)
+		if(prob(3))
+			for(var/obj/item/bodypart/BP in H.bodyparts)
+				if(BP.chronic_pain > 30)
+					BP.lingering_pain += rand(20, 30)
+					to_chat(H, span_warning("Your old war wound flares up from the stress!"))
+					break
+
+	// Random phantom pain
+	if(prob(1.5))
+		for(var/obj/item/bodypart/BP in H.bodyparts)
+			if(BP.chronic_pain > 0)
+				BP.lingering_pain += rand(10, 20)
+				var/pain_type = pick("sharp", "throbbing", "burning", "aching")
+				to_chat(H, span_warning("A [pain_type] pain shoots through your old wound."))
+				break
