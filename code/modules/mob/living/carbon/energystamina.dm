@@ -98,6 +98,11 @@
 		return TRUE
 	if(HAS_TRAIT(src, TRAIT_FORTITUDE))
 		added = added * 0.5
+	var/athletics_skill = get_skill_level(/datum/skill/misc/athletics)
+	if(added > 0 && athletics_skill)
+		var/modifier = 1 - (athletics_skill * 0.07) // 7% less stamina cost per skill level
+		added *= modifier
+		added = round(added, 1)	
 	stamina = CLAMP(stamina+added, 0, max_stamina)
 	if(added > 0)
 		energy_add(added * -1)
