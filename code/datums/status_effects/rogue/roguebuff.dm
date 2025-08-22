@@ -1013,15 +1013,14 @@
 	duration = 15 SECONDS
 
 /datum/status_effect/buff/bloodrage/on_apply()
-	ADD_TRAIT(owner, TRAIT_STRENGTH_UNCAPPED, TRAIT_MIRACLE)
 	var/holyskill = owner.get_skill_level(/datum/skill/magic/holy)
 	duration = ((15 SECONDS) * holyskill)
 	var/filter = owner.get_filter(BLOODRAGE_FILTER)
 	if(!filter)
 		owner.add_filter(BLOODRAGE_FILTER, 2, list("type" = "outline", "color" = outline_color, "alpha" = 60, "size" = 2))
 	if(!HAS_TRAIT(owner, TRAIT_DODGEEXPERT))
-		if(owner.STASTR < STRENGTH_SOFTCAP)
-			effectedstats = list("strength" = (STRENGTH_SOFTCAP - owner.STASTR))
+		if(owner.STASTR < 14)
+			effectedstats = list("strength" = (14 - owner.STASTR))
 			. = ..()
 			return TRUE
 	if(holyskill >= SKILL_LEVEL_APPRENTICE)
@@ -1033,7 +1032,6 @@
 
 /datum/status_effect/buff/bloodrage/on_remove()
 	. = ..()
-	REMOVE_TRAIT(owner, TRAIT_STRENGTH_UNCAPPED, TRAIT_MIRACLE)
 	owner.visible_message(span_warning("[owner] wavers, their rage simmering down."))
 	owner.OffBalance(3 SECONDS)
 	owner.remove_filter(BLOODRAGE_FILTER)

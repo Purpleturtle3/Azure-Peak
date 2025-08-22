@@ -34,12 +34,10 @@
 /mob/living/energy_add(added as num)
 	if(HAS_TRAIT(src, TRAIT_INFINITE_STAMINA))
 		return TRUE
-	//if(HAS_TRAIT(src, TRAIT_NOSLEEP))
-	//	return TRUE
+
 	if(HAS_TRAIT(src, TRAIT_INFINITE_ENERGY))
 		return TRUE
-	if(m_intent == MOVE_INTENT_RUN && isnull(buckled))
-		mind && mind.add_sleep_experience(/datum/skill/misc/athletics, (STAINT*0.02))
+
 	energy += added
 	if(energy > max_energy)
 		energy = max_energy
@@ -105,6 +103,7 @@
 		var/modifier = 1 - (athletics_skill * 0.07) // 7% less stamina cost per skill level
 		added *= modifier
 		added = round(added, 1)
+
 	stamina = CLAMP(stamina+added, 0, max_stamina)
 	if(added > 0)
 		energy_add(added * -1)
