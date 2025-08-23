@@ -122,6 +122,8 @@
 
 	// Flat bonuses
 	if(has_status_effect(/datum/status_effect/buff/moondust))
+		flat_bonus += -1
+	if(has_status_effect(/datum/status_effect/buff/moondust_purest))
 		flat_bonus += -2
 
 	return round((base_amt * multiplier) + flat_bonus, 1)
