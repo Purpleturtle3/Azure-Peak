@@ -104,7 +104,7 @@
 
 	// Trait based
 	var/trait_mods = list(
-		TRAIT_FORTITUDE = 0.5
+		TRAIT_FORTITUDE = 0.2
 	)
 	for(var/trait in trait_mods)
 		if(HAS_TRAIT(src, trait))
