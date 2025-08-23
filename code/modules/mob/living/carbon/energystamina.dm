@@ -93,18 +93,46 @@
 
 	return nutrition_amount
 
+/mob/living/proc/get_stamina_modifiers(base_amt)
+	var/multiplier = 1.0
+	var/flat_bonus = 0
+
+	// Athletics based 
+	var/athletics_skill = get_skill_level(/datum/skill/misc/athletics)
+	if(athletics_skill)
+		multiplier *= (1 - (athletics_skill * 0.07))
+
+	// Trait based
+	var/trait_mods = list(
+		TRAIT_FORTITUDE = 0.5
+	)
+	for(var/trait in trait_mods)
+		if(HAS_TRAIT(src, trait))
+			multiplier *= trait_mods[trait]
+
+	// Status effect modifiers
+	var/status_mods = list(
+		/datum/status_effect/debuff/thirstyt1 = 1.25,
+		/datum/status_effect/debuff/thirstyt2 = 1.35,
+		/datum/status_effect/debuff/thirstyt3 = 1.55
+	)
+	for(var/effect in status_mods)
+		if(has_status_effect(effect))
+			multiplier *= status_mods[effect]
+
+	// Flat bonuses
+	if(has_status_effect(/datum/status_effect/buff/moondust))
+		flat_bonus += -2
+
+	return round((base_amt + flat_bonus) * multiplier, 1)
+
 /mob/living/stamina_add(added as num, emote_override, force_emote = TRUE) //call update_stamina here and set last_fatigued, return false when not enough fatigue left
 	if(HAS_TRAIT(src, TRAIT_INFINITE_STAMINA))
 		return TRUE
-	if(HAS_TRAIT(src, TRAIT_FORTITUDE))
-		added = added * 0.5
-	var/athletics_skill = get_skill_level(/datum/skill/misc/athletics)
-	if(added > 0 && athletics_skill)
-		var/modifier = 1 - (athletics_skill * 0.07) // 7% less stamina cost per skill level
-		added *= modifier
-		added = round(added, 1)
 
+	added = get_stamina_modifiers(added)
 	stamina = CLAMP(stamina+added, 0, max_stamina)
+
 	if(added > 0)
 		energy_add(added * -1)
 		adjust_nutrition(-stamina_nutrition_mod(added))
