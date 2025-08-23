@@ -124,7 +124,7 @@
 	if(has_status_effect(/datum/status_effect/buff/moondust))
 		flat_bonus += -2
 
-	return round((base_amt + flat_bonus) * multiplier, 1)
+	return round((base_amt * multiplier) + flat_bonus, 1)
 
 /mob/living/stamina_add(added as num, emote_override, force_emote = TRUE) //call update_stamina here and set last_fatigued, return false when not enough fatigue left
 	if(HAS_TRAIT(src, TRAIT_INFINITE_STAMINA))
