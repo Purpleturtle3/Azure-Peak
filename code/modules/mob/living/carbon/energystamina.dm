@@ -78,9 +78,6 @@
 	if (STASTR >= 11) // 7.5% increased nutrition loss for every STR above 11. the gainz don't come cheap
 		var/swole_malus = (10 - STASTR) * 0.075
 		nutrition_amount *= (1 + swole_malus)
-	if (athletics_skill)
-		var/athletics_bonus = athletics_skill * 0.05 //each rank of athletics gives us 5% less nutrition loss
-		nutrition_amount *= (1 - athletics_bonus)
 	
 	if (nutrition >= NUTRITION_LEVEL_WELL_FED) // we've only just eaten recently so just flat out reduce the total loss by half
 		nutrition_amount *= 0.5
