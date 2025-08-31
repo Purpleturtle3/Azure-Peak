@@ -566,9 +566,11 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Yo man, what if, we like, uh, put
 	var/mob/living/carbon/human/H = src
 	if(H.head && H.head.armor?.blunt > 70)
 		return TRUE
+	if(H.wear_armor && (H.wear_armor.armor_class in list(ARMOR_CLASS_HEAVY, ARMOR_CLASS_MEDIUM)))
+		return TRUE
 	return FALSE
 
-/mob/living/proc/get_sleepy_mod()
+/mob/living/carbon/proc/get_sleepy_mod()
 	if(buckled?.sleepy)
 		return buckled.sleepy
 	if(isturf(loc))
@@ -577,31 +579,42 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Yo man, what if, we like, uh, put
 			return bed.sleepy
 		if(HAS_TRAIT(src, TRAIT_OUTDOORSMAN))
 			var/obj/structure/flora/newbranch/branch = locate() in loc
-				if(branch)
-					return 1.5 
+			if(branch)
+				return 1.5 //Worse than a bedroll, better than nothing.
 	return 0
 
 /mob/living/carbon/proc/handle_sleep()
-	if(HAS_TRAIT(src, TRAIT_NOSLEEP) && !(mobility_flags & MOBILITY_STAND)) // If someone can get tired but doesn't sleep
+	// Special case: creatures that don't actually sleep but rest
+	if(HAS_TRAIT(src, TRAIT_NOSLEEP) && !(mobility_flags & MOBILITY_STAND))
 		energy_add(5)
 		if(mind?.has_antag_datum(/datum/antagonist/vampirelord/lesser))
 			energy_add(10)
 		return
-	//Healing while sleeping in a bed
+
+	// --- ACTUAL SLEEPING ---
 	if(IsSleeping())
 		var/sleepy_mod = 0.5
+
+		// Better sleep trait bonus
 		if(HAS_TRAIT(src, TRAIT_BETTER_SLEEP))
 			energy_add(sleepy_mod * 4)
-	// Bed/seat bonuses
+
+		// Bed/seat bonuses
 		var/bed_mod = get_sleepy_mod()
 		if(bed_mod)
 			sleepy_mod = bed_mod
+
 		var/yess = HAS_TRAIT(src, TRAIT_NOHUNGER)
+
+		// Stamina recovery if fed
 		if(nutrition > 0 || yess)
 			energy_add(sleepy_mod * 15)
+
+		// Healing & hydration recovery
 		if(hydration > 0 || yess)
 			if(!bleed_rate)
 				blood_volume = min(blood_volume + (4 * sleepy_mod), BLOOD_VOLUME_NORMAL)
+
 			for(var/obj/item/bodypart/affecting as anything in bodyparts)
 				if(affecting.get_bleed_rate() >= 1)
 					continue
@@ -611,15 +624,18 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Yo man, what if, we like, uh, put
 					if(!wound.sleep_healing)
 						continue
 					wound.heal_wound(wound.sleep_healing * sleepy_mod)
+
 			adjustToxLoss(-sleepy_mod)
+
 			if(eyesclosed && !HAS_TRAIT(src, TRAIT_NOSLEEP))
+				teleport_to_dream(src, 10000, 2)
 				Sleeping(300)
 		return
-	
-		// Resting on a bed or something
+
+	// --- RESTING / DOZING ---
 	var/sleepy_mod = get_sleepy_mod()
 
-	//Case 1: Buckled, bed, branch
+	// Case 1: Resting on bed/seat/etc
 	if(sleepy_mod > 0)
 		if(eyesclosed)
 			if(armor_blocks_sleep())
@@ -636,7 +652,8 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Yo man, what if, we like, uh, put
 					Sleeping(300)
 		else
 			energy_add(sleepy_mod * 10)
-		// Case 2: Resting directly on ground
+
+	// Case 2: Resting directly on ground
 	else if(!(mobility_flags & MOBILITY_STAND))
 		if(eyesclosed)
 			if(armor_blocks_sleep())
@@ -647,12 +664,15 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Yo man, what if, we like, uh, put
 				if(!fallingas)
 					to_chat(src, span_warning("I'll fall asleep soon, although a bed would be more comfortable..."))
 				fallingas++
+				if(HAS_TRAIT(src, TRAIT_FASTSLEEP))
+					fallingas++
 				if(fallingas > 25)
 					Sleeping(300)
 		else
 			energy_add(10)
 	else if(fallingas)
 		fallingas = 0
-	// Leaning against wall
+
+	// --- LEANING AGAINST WALL ---
 	if(mobility_flags & MOBILITY_STAND && wallpressed && !IsSleeping() && !buckled && !lying)
 		energy_add(5)
