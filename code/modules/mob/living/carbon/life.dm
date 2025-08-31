@@ -570,39 +570,38 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Yo man, what if, we like, uh, put
 		return TRUE
 	return FALSE
 
-/mob/living/carbon/proc/get_sleepy_mod()
+/mob/living/carbon/proc/get_rest_surface_mod()
 	if(buckled?.sleepy)
 		return buckled.sleepy
-	if(isturf(loc))
+	if(lying && isturf(loc))
 		var/obj/structure/bed/rogue/bed = locate() in loc
 		if(bed)
 			return bed.sleepy
 		if(HAS_TRAIT(src, TRAIT_OUTDOORSMAN))
 			var/obj/structure/flora/newbranch/branch = locate() in loc
 			if(branch)
-				return 1.5 //Worse than a bedroll, better than nothing.
+				return 1.5
 	return 0
 
 /mob/living/carbon/proc/handle_sleep()
-	// Special case: Don't actually sleep but rest
+	// Doesn't actually sleep but rest
 	if(HAS_TRAIT(src, TRAIT_NOSLEEP) && !(mobility_flags & MOBILITY_STAND))
 		energy_add(5)
 		if(mind?.has_antag_datum(/datum/antagonist/vampirelord/lesser))
 			energy_add(10)
 		return
 
-	// --- ACTUAL SLEEPING ---
+	// ACTUAL SLEEPING 
 	if(IsSleeping())
 		var/sleepy_mod = 0.5
+
+		var/surface_mod = get_rest_surface_mod()
+		if(surface_mod)
+			sleepy_mod = surface_mod
 
 		// Better sleep trait bonus
 		if(HAS_TRAIT(src, TRAIT_BETTER_SLEEP))
 			energy_add(sleepy_mod * 4)
-
-		// Bed/seat bonuses
-		var/bed_mod = get_sleepy_mod()
-		if(bed_mod)
-			sleepy_mod = bed_mod
 
 		var/yess = HAS_TRAIT(src, TRAIT_NOHUNGER)
 
@@ -628,14 +627,13 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Yo man, what if, we like, uh, put
 			adjustToxLoss(-sleepy_mod)
 
 			if(eyesclosed && !HAS_TRAIT(src, TRAIT_NOSLEEP))
-				teleport_to_dream(src, 10000, 2)
 				Sleeping(300)
 		return
 
+	// RESTING
+	var/sleepy_mod = get_rest_surface_mod()
 
-	var/sleepy_mod = get_sleepy_mod()
-
-	// Case 1: Resting on bed/seat/etc
+	// Case 1: Resting where you should
 	if(sleepy_mod > 0)
 		if(eyesclosed)
 			if(armor_blocks_sleep())
