@@ -560,8 +560,29 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Yo man, what if, we like, uh, put
 *	Hunger and Hydration.
 */
 
+/mob/living/carbon/proc/armor_blocks_sleep()
+	if(!ishuman(src) || stat != CONSCIOUS)
+		return FALSE
+	var/mob/living/carbon/human/H = src
+	if(H.head && H.head.armor?.blunt > 70)
+		return TRUE
+	return FALSE
+
+/mob/living/proc/get_sleepy_mod()
+	if(buckled?.sleepy)
+		return buckled.sleepy
+	if(isturf(loc))
+		var/obj/structure/bed/rogue/bed = locate() in loc
+		if(bed)
+			return bed.sleepy
+		if(HAS_TRAIT(src, TRAIT_OUTDOORSMAN))
+		var/obj/structure/flora/newbranch/branch = locate() in loc
+		if(branch)
+			return 1.5 
+	return 0
+
 /mob/living/carbon/proc/handle_sleep()
-	if(HAS_TRAIT(src, TRAIT_NOSLEEP) && !(mobility_flags & MOBILITY_STAND))
+	if(HAS_TRAIT(src, TRAIT_NOSLEEP) && !(mobility_flags & MOBILITY_STAND)) // If someone can get tired but doesn't sleep
 		energy_add(5)
 		if(mind?.has_antag_datum(/datum/antagonist/vampirelord/lesser))
 			energy_add(10)
@@ -569,22 +590,19 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Yo man, what if, we like, uh, put
 	//Healing while sleeping in a bed
 	if(IsSleeping())
 		var/sleepy_mod = 0.5
-		var/yess = HAS_TRAIT(src, TRAIT_NOHUNGER)
 		if(HAS_TRAIT(src, TRAIT_BETTER_SLEEP))
 			energy_add(sleepy_mod * 4)
-		if(buckled?.sleepy)
-			sleepy_mod = buckled.sleepy
-		else if(isturf(loc)) //No illegal tech.
-			var/obj/structure/bed/rogue/bed = locate() in loc
-			if(bed)
-				sleepy_mod = bed.sleepy
+	// Bed/seat bonuses
+		var/bed_mod = get_sleepy_mod()
+		if(bed_mod)
+			sleepy_mod = bed_mod
+		var/yess = HAS_TRAIT(src, TRAIT_NOHUNGER)
 		if(nutrition > 0 || yess)
 			energy_add(sleepy_mod * 15)
 		if(hydration > 0 || yess)
 			if(!bleed_rate)
 				blood_volume = min(blood_volume + (4 * sleepy_mod), BLOOD_VOLUME_NORMAL)
 			for(var/obj/item/bodypart/affecting as anything in bodyparts)
-				//for context, it takes 5 small cuts (0.2 x 5) or 3 normal cuts (0.4 x 3) for a bodypart to not be able to heal itself
 				if(affecting.get_bleed_rate() >= 1)
 					continue
 				if(affecting.heal_damage(sleepy_mod, sleepy_mod, required_status = BODYPART_ORGANIC))
@@ -596,68 +614,45 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Yo man, what if, we like, uh, put
 			adjustToxLoss(-sleepy_mod)
 			if(eyesclosed && !HAS_TRAIT(src, TRAIT_NOSLEEP))
 				Sleeping(300)
-	else if(!IsSleeping() && !HAS_TRAIT(src, TRAIT_NOSLEEP))
+		return
+	
 		// Resting on a bed or something
-		var/sleepy_mod = 0
-		if(buckled?.sleepy)
-			sleepy_mod = buckled.sleepy
-		else if(isturf(loc) && !(mobility_flags & MOBILITY_STAND))
-			var/obj/structure/bed/rogue/bed = locate() in loc
-			if(bed)
-				sleepy_mod = bed.sleepy
-			else
-				if(HAS_TRAIT(src, TRAIT_OUTDOORSMAN))
-					var/obj/structure/flora/newbranch/branch = locate() in loc
-					if(branch)
-						sleepy_mod = 1.5 //Worse than a bedroll, better than nothing.
-		if(sleepy_mod > 0)
-			if(eyesclosed)
-				var/armor_blocked = FALSE
-				if(ishuman(src) && stat == CONSCIOUS)
-					var/mob/living/carbon/human/H = src
-					if(H.head && H.head.armor?.blunt > 70)
-						armor_blocked = TRUE
-					if(H.wear_armor && (H.wear_armor.armor_class in list(ARMOR_CLASS_HEAVY, ARMOR_CLASS_MEDIUM)))
-						armor_blocked = TRUE
-					if(armor_blocked && !fallingas)
-						to_chat(src, span_warning("I can't sleep like this. My armor is burdening me."))
-						fallingas = TRUE
-				if(!armor_blocked)
-					if(!fallingas)
-						to_chat(src, span_warning("I'll fall asleep soon..."))
-					fallingas++
-					if(HAS_TRAIT(src, TRAIT_FASTSLEEP))
-						fallingas++
-					if(fallingas > 15)
-						Sleeping(300)
-			else
-				energy_add(sleepy_mod * 10)
-		// Resting on the ground (not sleeping or with eyes closed and about to fall asleep)
-		else if(!(mobility_flags & MOBILITY_STAND))
-			if(eyesclosed)
-				var/armor_blocked = FALSE
-				if(ishuman(src) && stat == CONSCIOUS)
-					var/mob/living/carbon/human/H = src
-					if(H.head && H.head.armor?.blunt > 70)
-						armor_blocked = TRUE
-					if(H.wear_armor && (H.wear_armor.armor_class in list(ARMOR_CLASS_HEAVY, ARMOR_CLASS_MEDIUM)))
-						armor_blocked = TRUE
-					if(armor_blocked && !fallingas)
-						to_chat(src, span_warning("I can't sleep like this. My armor is burdening me."))
-						fallingas = TRUE
-				if(!armor_blocked)
-					if(!fallingas)
-						to_chat(src, span_warning("I'll fall asleep soon, although a bed would be more comfortable..."))
-					fallingas++
-					if(HAS_TRAIT(src, TRAIT_FASTSLEEP))
-						fallingas++
-					if(fallingas > 25)
-						Sleeping(300)
-			else
-				energy_add(10)
-		else if(fallingas)
-			fallingas = 0
+	var/sleepy_mod = get_sleepy_mod()
 
-	// Leaning against a wall: slowly regain stamina
+	//Case 1: Buckled, bed, branch
+	if(sleepy_mod > 0)
+		if(eyesclosed)
+			if(armor_blocks_sleep())
+				if(!fallingas)
+					to_chat(src, span_warning("I can't sleep like this. My armor is burdening me."))
+				fallingas = TRUE
+			else
+				if(!fallingas)
+					to_chat(src, span_warning("I'll fall asleep soon..."))
+				fallingas++
+				if(HAS_TRAIT(src, TRAIT_FASTSLEEP))
+					fallingas++
+				if(fallingas > 15)
+					Sleeping(300)
+		else
+			energy_add(sleepy_mod * 10)
+		// Case 2: Resting directly on ground
+	else if(!(mobility_flags & MOBILITY_STAND))
+		if(eyesclosed)
+			if(armor_blocks_sleep())
+				if(!fallingas)
+					to_chat(src, span_warning("I can't sleep like this. My armor is burdening me."))
+				fallingas = TRUE
+			else
+				if(!fallingas)
+					to_chat(src, span_warning("I'll fall asleep soon, although a bed would be more comfortable..."))
+				fallingas++
+				if(fallingas > 25)
+					Sleeping(300)
+		else
+			energy_add(10)
+	else if(fallingas)
+		fallingas = 0
+	// Leaning against wall
 	if(mobility_flags & MOBILITY_STAND && wallpressed && !IsSleeping() && !buckled && !lying)
 		energy_add(5)
