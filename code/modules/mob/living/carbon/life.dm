@@ -584,7 +584,7 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Yo man, what if, we like, uh, put
 	return 0
 
 /mob/living/carbon/proc/handle_sleep()
-	// Special case: creatures that don't actually sleep but rest
+	// Special case: Don't actually sleep but rest
 	if(HAS_TRAIT(src, TRAIT_NOSLEEP) && !(mobility_flags & MOBILITY_STAND))
 		energy_add(5)
 		if(mind?.has_antag_datum(/datum/antagonist/vampirelord/lesser))
@@ -631,6 +631,7 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Yo man, what if, we like, uh, put
 				teleport_to_dream(src, 10000, 2)
 				Sleeping(300)
 		return
+
 
 	var/sleepy_mod = get_sleepy_mod()
 
