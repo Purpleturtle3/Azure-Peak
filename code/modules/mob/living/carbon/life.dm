@@ -576,9 +576,9 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Yo man, what if, we like, uh, put
 		if(bed)
 			return bed.sleepy
 		if(HAS_TRAIT(src, TRAIT_OUTDOORSMAN))
-		var/obj/structure/flora/newbranch/branch = locate() in loc
-		if(branch)
-			return 1.5 
+			var/obj/structure/flora/newbranch/branch = locate() in loc
+				if(branch)
+					return 1.5 
 	return 0
 
 /mob/living/carbon/proc/handle_sleep()
