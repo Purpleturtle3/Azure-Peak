@@ -649,7 +649,7 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Yo man, what if, we like, uh, put
 				if(fallingas > 15)
 					Sleeping(300)
 		else
-			energy_add(sleepy_mod * 10)
+			energy_add(sleepy_mod * 13)
 
 	// Case 2: Resting directly on ground
 	else if(!(mobility_flags & MOBILITY_STAND))

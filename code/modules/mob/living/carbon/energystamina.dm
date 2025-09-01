@@ -1,5 +1,5 @@
 /mob/living/proc/update_stamina() //update hud and regen after last_fatigued delay on taking
-	max_stamina = max_energy / 10
+	max_stamina = 100
 
 	var/delay = 20
 	if(HAS_TRAIT(src, TRAIT_APRICITY)) 
@@ -23,7 +23,7 @@
 	update_health_hud()
 
 /mob/living/proc/update_energy()
-	max_energy = 1000
+	max_energy = 1500
 	if(cmode)
 		if(!HAS_TRAIT(src, TRAIT_BREADY))
 			energy_add(-2)
