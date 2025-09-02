@@ -13,6 +13,7 @@ GLOBAL_VAR(king_throne)
 	obj_flags = NONE
 	var/rebel_leader_sit_time = 0
 	var/notified_rebel_able = FALSE
+	sleepy = 0.5
 
 /obj/structure/roguethrone/post_buckle_mob(mob/living/M)
 	..()

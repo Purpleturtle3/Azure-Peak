@@ -114,6 +114,7 @@
 	blade_dulling = DULLING_BASHCHOP
 	destroy_sound = 'sound/combat/hits/onwood/destroyfurniture.ogg'
 	attacked_sound = "woodimpact"
+	sleepy = 0.35
 
 /obj/structure/chair/wood/rogue/chair3
 	icon_state = "chair3"
@@ -159,7 +160,6 @@
 	max_integrity = 100
 	destroy_sound = 'sound/combat/hits/onwood/destroyfurniture.ogg'
 	attacked_sound = "woodimpact"
-	sleepy = 0.35
 
 /obj/item/chair/rogue/getonmobprop(tag)
 	. = ..()
@@ -391,28 +391,7 @@
 	pixel_y = 0
 	sleepy = 3
 	debris = list(/obj/item/grown/log/tree/small = 2)
-/*            ///////WIP  This will essentially allow for multiple mobs to buckle, just needs to change mousedrop function
-/obj/structure/bed/rogue/inn/double
-	var/list/buckled_mobs = list()
 
-/obj/structure/bed/rogue/inn/double/post_buckle_mob(mob/living/M)
-	. = ..()
-	if(!buckled_mobs)
-		buckled_mobs = list()
-	buckled_mobs += M
-	M.set_mob_offsets("bed_buckle", _x = buckled_mobs.len * 10, _y = 5)
-
-/obj/structure/bed/rogue/inn/double/post_unbuckle_mob(mob/living/M)
-	. = ..()
-	if(M in buckled_mobs)
-		buckled_mobs -= M
-	M.reset_offsets("bed_buckle")
-
-	var/x_offset = 0
-	for(var/mob/living/buckled_mob in buckled_mobs)
-		buckled_mob.set_mob_offsets("bed_buckle", _x = x_offset, _y = 5)
-		x_offset += 10
-*/
 /obj/structure/bed/rogue/inn/hay
 	icon_state = "haybed"
 	icon = 'icons/roguetown/misc/beds.dmi'
