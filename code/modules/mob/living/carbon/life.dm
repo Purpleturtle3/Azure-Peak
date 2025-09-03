@@ -636,6 +636,7 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Yo man, what if, we like, uh, put
 	// Case 1: Resting where you should
 	if(sleepy_mod > 0)
 		if(eyesclosed)
+			energy_add(sleepy_mod * 5)
 			if(armor_blocks_sleep())
 				if(!fallingas)
 					to_chat(src, span_warning("I can't sleep like this. My armor is burdening me."))
@@ -654,6 +655,7 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Yo man, what if, we like, uh, put
 	// Case 2: Resting directly on ground
 	else if(!(mobility_flags & MOBILITY_STAND))
 		if(eyesclosed)
+			energy_add(5)
 			if(armor_blocks_sleep())
 				if(!fallingas)
 					to_chat(src, span_warning("I can't sleep like this. My armor is burdening me."))
