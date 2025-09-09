@@ -1,5 +1,5 @@
 /datum/job/roguetown/manorguard
-	title = "Man at Arms"
+	title = "Town Watch"
 	flag = MANATARMS
 	department_flag = GARRISON
 	faction = "Station"
@@ -9,16 +9,16 @@
 	allowed_sexes = list(MALE, FEMALE)
 	allowed_races = RACES_ALL_KINDS
 	allowed_ages = list(AGE_ADULT, AGE_MIDDLEAGED)
-	tutorial = "Having proven yourself loyal and capable, you are entrusted to defend the town and enforce its laws. \
-				Trained regularly in combat and siege warfare, you deal with threats - both within and without. \
-				Obey your Sergeant-at-Arms, the Marshal, and the Crown. Show the nobles and knights your respect, so that you may earn it in turn. Not as a commoner, but as a soldier.."
+	tutorial = "For reasons only known to yourself, you have joined the volunteer forces of the town's watch. \
+				Having proven competent at the basics of combat, you recieved training and equipment from your betters. \
+				Obey your captain, and show the nobles your respect. Don't forget, serving is a privilege, and you may as well hold it over others."
 	display_order = JDO_CASTLEGUARD
 	whitelist_req = TRUE
 
 	outfit = /datum/outfit/job/roguetown/manorguard
 	advclass_cat_rolls = list(CTAG_MENATARMS = 20)
 
-	give_bank_account = 22
+	give_bank_account = 30 //thirty coins
 	min_pq = 3
 	max_pq = null
 	round_contrib_points = 2
@@ -35,28 +35,49 @@
 		H.advsetup = 1
 		H.invisibility = INVISIBILITY_MAXIMUM
 		H.become_blind("advsetup")
-		if(istype(H.cloak, /obj/item/clothing/cloak/stabard/surcoat/guard))
-			var/obj/item/clothing/S = H.cloak
-			var/index = findtext(H.real_name, " ")
-			if(index)
-				index = copytext(H.real_name, 1,index)
-			if(!index)
-				index = H.real_name
-			S.name = "man-at-arms jupon ([index])"
+
+/datum/outfit/job/roguetown/manorguard/pre_equip(mob/living/carbon/human/H)
+    ..()  // Moved the pre equip thingy up here so we don't need to repeat cloak code for every subclass
+
+	// Choice of drip
+    var/livery_options = list(
+        "Guardhood" = /obj/item/clothing/cloak/stabard/guardhood,
+        "Jupon"   = /obj/item/clothing/cloak/stabard/surcoat/guard,
+		"Surcoat"	= /obj/item/clothing/cloak/stabard/guard,
+		"Tabard"	= /obj/item/clothing/cloak/tabard/knight/guard
+    )
+    var/choice = input(H, "Choose your uniform.", "GUARD LIVERY") as anything in livery_options
+
+    var/typepath = livery_options[choice]
+    if(typepath)
+        var/obj/item/clothing/C = new typepath(H)  
+
+        // Get first name for display
+        var/index = findtext(H.real_name, " ")
+        var/fname
+        if(index)
+            fname = copytext(H.real_name, 1, index)
+        else
+            fname = H.real_name
+
+        C.name = "[choice] ([fname])"
+
+        // Equip into cloak slot
+        H.equip_to_slot_or_del(C, SLOT_CLOAK)
+
 
 /datum/outfit/job/roguetown/manorguard
-	cloak = /obj/item/clothing/cloak/stabard/surcoat/guard
-	wrists = /obj/item/clothing/wrists/roguetown/bracers
-	gloves = /obj/item/clothing/gloves/roguetown/fingerless_leather
-	shoes = /obj/item/clothing/shoes/roguetown/boots/leather/reinforced
-	beltl = /obj/item/rogueweapon/mace/cudgel
+	wrists = /obj/item/clothing/wrists/roguetown/bracers/iron
+	gloves = /obj/item/clothing/gloves/roguetown/chain/iron
+	shoes = /obj/item/clothing/shoes/roguetown/boots/armor/iron
+	beltl = /obj/item/flashlight/flare/torch/lantern/prelit
 	belt = /obj/item/storage/belt/rogue/leather/black
 	backr = /obj/item/storage/backpack/rogue/satchel/black
 	id = /obj/item/scomstone/bad/garrison
 
 // Melee goon
 /datum/advclass/manorguard/footsman
-	name = "Footman"
+	name = "Woodsman"
 	tutorial = "You are a professional soldier of the realm, specializing in melee warfare. Stalwart and hardy, your body can both withstand and dish out powerful strikes.."
 	outfit = /datum/outfit/job/roguetown/manorguard/footsman
 
@@ -65,42 +86,38 @@
 /datum/outfit/job/roguetown/manorguard/footsman/pre_equip(mob/living/carbon/human/H)
 	..()
 	H.adjust_skillrank(/datum/skill/combat/polearms, 4, TRUE)
-	H.adjust_skillrank(/datum/skill/combat/swords, 4, TRUE)
-	H.adjust_skillrank(/datum/skill/combat/maces, 4, TRUE)
+	H.adjust_skillrank(/datum/skill/combat/swords, 2, TRUE)
+	H.adjust_skillrank(/datum/skill/combat/maces, 3, TRUE)
 	H.adjust_skillrank(/datum/skill/combat/axes, 4, TRUE)
-	H.adjust_skillrank(/datum/skill/combat/knives, 3, TRUE)
-	H.adjust_skillrank(/datum/skill/combat/whipsflails, 2, TRUE)
-	H.adjust_skillrank(/datum/skill/combat/slings, 1, TRUE)
+	H.adjust_skillrank(/datum/skill/combat/knives, 2, TRUE)
 	H.adjust_skillrank(/datum/skill/combat/shields, 3, TRUE)
 	H.adjust_skillrank(/datum/skill/combat/wrestling, 4, TRUE)
-	H.adjust_skillrank(/datum/skill/combat/unarmed, 4, TRUE)
+	H.adjust_skillrank(/datum/skill/combat/unarmed, 3, TRUE)
 	H.adjust_skillrank(/datum/skill/misc/climbing, 3, TRUE)
-	H.adjust_skillrank(/datum/skill/misc/sneaking, 2, TRUE)
 	H.adjust_skillrank(/datum/skill/misc/reading, 1, TRUE)
-	H.adjust_skillrank(/datum/skill/misc/athletics, 3, TRUE)
-	H.adjust_skillrank(/datum/skill/misc/riding, 1, TRUE)
-	H.adjust_skillrank(/datum/skill/misc/tracking, 1, TRUE)
+	H.adjust_skillrank(/datum/skill/misc/athletics, 4, TRUE)
+	H.adjust_skillrank(/datum/skill/craft/carpentry, 1, TRUE)
+	H.adjust_skillrank(/datum/skill/labor/lumberjacking, 3, TRUE)
+	H.adjust_skillrank(/datum/skill/craft/crafting, 2, TRUE)
+	H.adjust_skillrank(/datum/skill/misc/swimming, 3, TRUE)
 	ADD_TRAIT(H, TRAIT_MEDIUMARMOR, TRAIT_GENERIC)
-	ADD_TRAIT(H, TRAIT_GUARDSMAN, TRAIT_GENERIC) //+1 spd, con, end, +2 per in town
 
-	H.change_stat("strength", 2) // seems kinda lame but remember guardsman bonus!!
+	H.change_stat("strength", 3)
+	H.change_stat("constitution", 2)
+	H.change_stat("perception", 2)
+	H.change_stat("speed", -1)
 	H.change_stat("intelligence", 1)
-	H.change_stat("constitution", 1)
-	H.change_stat("endurance", 1)
 
-	shirt = /obj/item/clothing/suit/roguetown/armor/gambeson/lord		//Bit worse shirt protection than the archer
-	armor = /obj/item/clothing/suit/roguetown/armor/plate/scale			//Makes up for worse shirt protection with kinda better armor protection
-	pants = /obj/item/clothing/under/roguetown/chainlegs
-	neck = /obj/item/clothing/neck/roguetown/gorget
+	shirt = /obj/item/clothing/suit/roguetown/armor/gambeson/lord	//Bit worse shirt protection than the archer
+	armor = /obj/item/clothing/suit/roguetown/armor/chainmail/hauberk/iron	//Makes up for worse shirt protection with kinda better armor protection
+	pants = /obj/item/clothing/under/roguetown/chainlegs/iron
+	neck = /obj/item/clothing/neck/roguetown/chaincoif/iron
 
 	H.adjust_blindness(-3)
-	var/weapons = list("Warhammer & Shield","Axe & Shield","Halberd","Greataxe")
+	var/weapons = list("Axe & Shield","Halberd","Greataxe")
 	var/weapon_choice = input("Choose your weapon.", "TAKE UP ARMS") as anything in weapons
 	H.set_blindness(0)
 	switch(weapon_choice)
-		if("Warhammer & Shield")
-			beltr = /obj/item/rogueweapon/mace/warhammer
-			backl = /obj/item/rogueweapon/shield/iron
 		if("Axe & Shield")
 			beltr = /obj/item/rogueweapon/stoneaxe/woodcut/steel
 			backl = /obj/item/rogueweapon/shield/iron
@@ -118,11 +135,10 @@
 	H.verbs |= /mob/proc/haltyell
 
 	var/helmets = list(
-	"Simple Helmet" 	= /obj/item/clothing/head/roguetown/helmet,
-	"Kettle Helmet" 	= /obj/item/clothing/head/roguetown/helmet/kettle,
-	"Bascinet Helmet"		= /obj/item/clothing/head/roguetown/helmet/bascinet,
-	"Sallet Helmet"		= /obj/item/clothing/head/roguetown/helmet/sallet,
-	"Winged Helmet" 	= /obj/item/clothing/head/roguetown/helmet/winged,
+	"Skull cap" 	= /obj/item/clothing/head/roguetown/helmet/skullcap,
+	"Kettle Helmet" 	= /obj/item/clothing/head/roguetown/helmet/kettle/iron,
+	"Sallet Helmet"		= /obj/item/clothing/head/roguetown/helmet/sallet/iron,
+	"Horned Helmet" 	= /obj/item/clothing/head/roguetown/helmet/horned,
 	"None"
 	)
 	var/helmchoice = input("Choose your Helm.", "TAKE UP HELMS") as anything in helmets
@@ -131,7 +147,7 @@
 
 // Ranged weapons and daggers on the side - lighter armor, but fleet!
 /datum/advclass/manorguard/skirmisher
-	name = "Skirmisher"
+	name = "Hunter"
 	tutorial = "You are a professional soldier of the realm, specializing in ranged implements. You sport a keen eye, looking for your enemies weaknesses."
 	outfit = /datum/outfit/job/roguetown/manorguard/skirmisher
 
@@ -139,27 +155,30 @@
 
 /datum/outfit/job/roguetown/manorguard/skirmisher/pre_equip(mob/living/carbon/human/H)
 	..()
-	H.adjust_skillrank(/datum/skill/combat/swords, 4, TRUE)
-	H.adjust_skillrank(/datum/skill/combat/knives, 4, TRUE)
-	H.adjust_skillrank(/datum/skill/combat/maces, 2, TRUE) 		// Still have a cugel.
-	H.adjust_skillrank(/datum/skill/combat/crossbows, 5, TRUE)		//Only effects draw and reload time.
-	H.adjust_skillrank(/datum/skill/combat/bows, 5, TRUE)			//Only effects draw times.
-	H.adjust_skillrank(/datum/skill/combat/slings, 5, TRUE)
+	H.adjust_skillrank(/datum/skill/combat/swords, 3, TRUE)
+	H.adjust_skillrank(/datum/skill/combat/knives, 3, TRUE)
+	H.adjust_skillrank(/datum/skill/combat/crossbows, 3, TRUE)		//Only effects draw and reload time.
+	H.adjust_skillrank(/datum/skill/combat/bows, 3, TRUE)			//Only effects draw times.
+	H.adjust_skillrank(/datum/skill/combat/slings, 3, TRUE)
 	H.adjust_skillrank(/datum/skill/misc/climbing, 4, TRUE)
 	H.adjust_skillrank(/datum/skill/misc/sneaking, 3, TRUE)
 	H.adjust_skillrank(/datum/skill/misc/athletics, 4, TRUE) // A little better; run fast, weak boy.
-	H.adjust_skillrank(/datum/skill/combat/wrestling, 4, TRUE)
-	H.adjust_skillrank(/datum/skill/combat/unarmed, 4, TRUE)
+	H.adjust_skillrank(/datum/skill/combat/wrestling, 3, TRUE)
+	H.adjust_skillrank(/datum/skill/combat/unarmed, 2, TRUE)
 	H.adjust_skillrank(/datum/skill/misc/reading, 1, TRUE)
-	H.adjust_skillrank(/datum/skill/misc/riding, 1, TRUE)
 	H.adjust_skillrank(/datum/skill/misc/tracking, 2, TRUE)
-	ADD_TRAIT(H, TRAIT_DODGEEXPERT, TRAIT_GENERIC)
-	ADD_TRAIT(H, TRAIT_GUARDSMAN, TRAIT_GENERIC) //+1 spd, con, end, +2 per in town
+	H.adjust_skillrank(/datum/skill/craft/cooking, 1, TRUE)
+	H.adjust_skillrank(/datum/skill/labor/butchering, 3, TRUE)
+	H.adjust_skillrank(/datum/skill/misc/sewing, 1, TRUE)
+	H.adjust_skillrank(/datum/skill/craft/tanning, 1, TRUE)
+	H.adjust_skillrank(/datum/skill/craft/crafting, 1, TRUE)
+	ADD_TRAIT(H, TRAIT_OUTDOORSMAN, TRAIT_GENERIC)
 
 	//Garrison ranged/speed class. Time to go wild
-	H.change_stat("endurance", 1) // seems kinda lame but remember guardsman bonus!!
-	H.change_stat("perception", 2)
-	H.change_stat("speed", 2)
+	H.change_stat("constitution", 2)
+	H.change_stat("intelligence", 1)
+	H.change_stat("perception", 3)
+	H.change_stat("speed", 1)
 
 	shirt = /obj/item/clothing/suit/roguetown/armor/gambeson/lord			// Cant wear chainmail anymoooree
 	armor = /obj/item/clothing/suit/roguetown/armor/leather/studded		//Helps against arrows; makes sense for a ranged-type role.
@@ -172,12 +191,15 @@
 	H.set_blindness(0)
 	switch(weapon_choice)
 		if("Crossbow")
+			H.adjust_skillrank(/datum/skill/combat/crossbows, 2, TRUE)
 			beltr = /obj/item/quiver/bolts
 			backl = /obj/item/gun/ballistic/revolver/grenadelauncher/crossbow
-		if("Bow") // They can head down to the armory to sideshift into one of the other bows.
+		if("Bow") 
+			H.adjust_skillrank(/datum/skill/combat/bows, 2, TRUE)
 			beltr = /obj/item/quiver/arrows
 			backl = /obj/item/gun/ballistic/revolver/grenadelauncher/bow/recurve
 		if("Sling")
+			H.adjust_skillrank(/datum/skill/combat/slings, 2, TRUE)
 			beltr = /obj/item/quiver/sling/iron
 			r_hand = /obj/item/gun/ballistic/revolver/grenadelauncher/sling // Both are belt slots and it's not worth setting where the cugel goes for everyone else, sad.
 
@@ -189,11 +211,10 @@
 	H.verbs |= /mob/proc/haltyell
 
 	var/helmets = list(
-	"Simple Helmet" 	= /obj/item/clothing/head/roguetown/helmet,
-	"Kettle Helmet" 	= /obj/item/clothing/head/roguetown/helmet/kettle,
-	"Bascinet Helmet"		= /obj/item/clothing/head/roguetown/helmet/bascinet,
-	"Sallet Helmet"		= /obj/item/clothing/head/roguetown/helmet/sallet,
-	"Winged Helmet" 	= /obj/item/clothing/head/roguetown/helmet/winged,
+	"Skull cap" 	= /obj/item/clothing/head/roguetown/helmet/skullcap,
+	"Kettle Helmet" 	= /obj/item/clothing/head/roguetown/helmet/kettle/iron,
+	"Sallet Helmet"		= /obj/item/clothing/head/roguetown/helmet/sallet/iron,
+	"Horned Helmet" 	= /obj/item/clothing/head/roguetown/helmet/horned,
 	"None"
 	)
 	var/helmchoice = input("Choose your Helm.", "TAKE UP HELMS") as anything in helmets
@@ -201,18 +222,16 @@
 		head = helmets[helmchoice]
 
 /datum/advclass/manorguard/cavalry
-	name = "Cavalryman"
+	name = "Brawler"
 	tutorial = "You are a professional soldier of the realm, specializing in the steady beat of hoof falls. Lighter and more expendable then the knights, you charge with lance in hand."
 	outfit = /datum/outfit/job/roguetown/manorguard/cavalry
-	horse = /mob/living/simple_animal/hostile/retaliate/rogue/saiga/tame/saddled //Since knights start with the Buck
-
 	category_tags = list(CTAG_MENATARMS)
 
 /datum/outfit/job/roguetown/manorguard/cavalry/pre_equip(mob/living/carbon/human/H)
 	..()
-	H.adjust_skillrank(/datum/skill/combat/polearms, 4, TRUE)
-	H.adjust_skillrank(/datum/skill/combat/swords, 4, TRUE)
-	H.adjust_skillrank(/datum/skill/combat/knives, 2, TRUE)
+	H.adjust_skillrank(/datum/skill/combat/polearms, 2, TRUE)
+	H.adjust_skillrank(/datum/skill/combat/swords, 2, TRUE)
+	H.adjust_skillrank(/datum/skill/combat/knives, 4, TRUE)
 	H.adjust_skillrank(/datum/skill/combat/maces, 3, TRUE) 		// Still have a cugel.
 	H.adjust_skillrank(/datum/skill/combat/shields, 3, TRUE)
 	H.adjust_skillrank(/datum/skill/combat/whipsflails, 3, TRUE)	//Best whip training out of MAAs, they're strong.
@@ -223,10 +242,7 @@
 	H.adjust_skillrank(/datum/skill/combat/wrestling, 4, TRUE)
 	H.adjust_skillrank(/datum/skill/combat/unarmed, 4, TRUE)
 	H.adjust_skillrank(/datum/skill/misc/reading, 1, TRUE)
-	H.adjust_skillrank(/datum/skill/misc/riding, 4, TRUE) 		// Like the other horselords.
-	H.adjust_skillrank(/datum/skill/misc/tracking, 3, TRUE)	//Best tracker. Might as well give it something to stick-out utility wise.
 	ADD_TRAIT(H, TRAIT_MEDIUMARMOR, TRAIT_GENERIC)
-	ADD_TRAIT(H, TRAIT_GUARDSMAN, TRAIT_GENERIC) //+1 spd, con, end, +2 per in town
 
 	//Garrison mounted class; charge and charge often.
 	H.change_stat("strength", 1)
@@ -259,11 +275,10 @@
 	H.verbs |= /mob/proc/haltyell
 
 	var/helmets = list(
-	"Simple Helmet" 	= /obj/item/clothing/head/roguetown/helmet,
-	"Kettle Helmet" 	= /obj/item/clothing/head/roguetown/helmet/kettle,
-	"Bascinet Helmet"		= /obj/item/clothing/head/roguetown/helmet/bascinet,
-	"Sallet Helmet"		= /obj/item/clothing/head/roguetown/helmet/sallet,
-	"Winged Helmet" 	= /obj/item/clothing/head/roguetown/helmet/winged,
+	"Skull cap" 	= /obj/item/clothing/head/roguetown/helmet/skullcap,
+	"Kettle Helmet" 	= /obj/item/clothing/head/roguetown/helmet/kettle/iron,
+	"Sallet Helmet"		= /obj/item/clothing/head/roguetown/helmet/sallet/iron,
+	"Horned Helmet" 	= /obj/item/clothing/head/roguetown/helmet/horned,
 	"None"
 	)
 	var/helmchoice = input("Choose your Helm.", "TAKE UP HELMS") as anything in helmets
